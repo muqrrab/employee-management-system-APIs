@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.0/js/bootstrap.min.js" integrity="sha512-8Y8eGK92dzouwpROIppwr+0kPauu0qqtnzZZNEF8Pat5tuRNJxJXCkbQfJ0HlUG3y1HB3z18CSKmUo7i2zcPpg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+</head>
+<body>
+    
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <form id="form">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="person" id="employee" value="Employee" checked>
+                        <label class="form-check-label" for="employee">
+                          Employee
+                        </label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="person" id="manager" value="Manager">
+                        <label class="form-check-label" for="manager">
+                          Manager
+                        </label>
+                      </div>
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" placeholder="Enter Name" required>
+                      </div>
+                    <div class="form-group">
+                      <label for="email">Email</label>
+                      <input type="email" class="form-control" id="email" required aria-describedby="emailHelp" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="number">Ph. Number</label>
+                        <input type="text" class="form-control" id="number" required placeholder="Enter Mobile Number">
+                    </div>
+                    <div class="form-group">
+                        <label for="designation">Designation</label>
+                        <input type="text" class="form-control" id="designation" required placeholder="Enter Designation">
+                      </div>
+                    <div class="form-group">
+                      <label for="password">Password</label>
+                      <input type="password" class="form-control" id="password" required placeholder="Password">
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2" id="button">Sign Up</button>
+                </form>
+                <div>
+                    <p>If you already have your account, <a href="{% url 'login' %}">SignIn here</a>.</p>
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+    
+
+</body>
+</html>
+
+<script>
+
+    $(document).on('submit', '#form', function(e) {
+        e.preventDefault();
+
+        name = $('#name').val()
+        email = $('#email').val()
+        number = $('#number').val()
+        designation = $('#designation').val()
+        password = $('#password').val()
+        person = $('input[name="person"]:checked').val()
+        
+
+        $.ajax({
+        url: "/api/ems/",
+        method: 'POST',
+        data:{'name':name,'person':person, 'email':email,'number':number,'designation':designation,'password':password,csrfmiddlewaretoken:'{{ csrf_token }}'}, 
+        csrfmiddlewaretoken:'{{ csrf_token }}',
+        success: function(result){
+            document.location.href = "/login/"
+            
+    }});
+    })
+
+
+   
+    
+    
+
+
+</script>

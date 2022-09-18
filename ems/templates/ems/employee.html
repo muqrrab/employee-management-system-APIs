@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.0/js/bootstrap.min.js" integrity="sha512-8Y8eGK92dzouwpROIppwr+0kPauu0qqtnzZZNEF8Pat5tuRNJxJXCkbQfJ0HlUG3y1HB3z18CSKmUo7i2zcPpg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <style>
+        .dashboard{
+            margin-top: 20px;
+            background-color: antiquewhite;
+            padding: 20px 0 ;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+     
+            <div class="dashboard text-center">
+                <h2>{{e.person}} Dashboard</h2>
+            </div>
+     
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h3>
+                Welcome, {{ e.name }}</h3>
+                <h4>Attendance = Present</h4>
+            <h4>Dated: {{ a.day }}</h4>
+            <h5 class="mt-5" style="color:red;">Once one of following button is clicked, It can't be reversed. Be careful.</h5>
+            <h4 class="mt-3">
+                <button id="btn" class="btn btn-primary">Check In</button>
+                <span id="in">Check in at {{a.checkin}}</span>
+            </h4>
+            <h4 class="mt-5">
+                <button id="btn2" class="btn btn-primary">Check Out</button>
+                <span id="out">Check out at {{a.checkout}}</span>
+            </h4>
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-5">
+
+                <button class="btn btn-danger" id="leave">Submit your Leave</button>
+                <div id="leavediv" class="mt-5">
+                </div>
+
+
+
+                <button class="btn btn-primary" id="check">Check your Leaves</button>
+                <div id="checkdiv" class="mt-3">
+                </div>
+
+
+                
+
+            </div>
+        </div>
+       
+    </div>
+</body>
+</html>
+
+
+<script>
+
+$('#leave').click(function (){
+    $('#checkdiv').html('')
+    $('#leavediv').html(
+        '<form id="form">\
+                        <div class="form-group">\
+                          <label for="drop">Leave Type</label>\
+                        <select id="dropdown" class="form-select" aria-label="leave select" name="drop">\
+                            <option selected disabled>Select Leave</option>\
+                            <option value="Casual">Casual</option>\
+                            <option value="Annual">Annual</option>\
+                            <option value="Sick">Sick</option>\
+                          </select>\
+                        </div>\
+                        <div class="form-group">\
+                          <label for="from">From Date</label>\
+                          <input type="date" name="from" class="form-control" id="from" required aria-describedby="emailHelp" placeholder="Enter email">\
+                        </div>\
+                        <div class="form-group">\
+                            <label for="to">To Date</label>\
+                            <input type="date" name="to" class="form-control" id="to" required placeholder="Enter Mobile Number">\
+                        </div>\
+                        <button type="submit" class="btn btn-primary mt-2 mb-5" id="leavebtn">Submit</button>\
+                    </form>'
+    )
+})
+
+
+$(document).on('submit', '#form', function(e) {
+    e.preventDefault()
+    type = $("#dropdown option:selected").text();
+
+    var date = new Date($('#from').val());
+    from = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear()
+
+    var date = new Date($('#to').val());
+    to = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear()
+
+    $.ajax({
+        url: "/api//ems/leave/", 
+        method:"POST",
+        headers: {'X-CSRFToken': csrftoken},
+        data:{'employee':'{{e.id}}', 'type':type, 'fromdate':from, 'todate':to,  csrfmiddlewaretoken:'{{ csrf_token }}'},
+        success: function(result){
+    $('#leavediv').html('<h5 class="alert alert-primary">Your Leave is Submitted successfully!</h5>')
+    },
+      error: function(){
+      }  
+});
+
+})
+
+
+
+$('#check').click(function(){
+    $.ajax({
+        url: "/api/ems/leave/{{e.id}}/", 
+        method:"GET",
+        // headers: {'X-CSRFToken': csrftoken},
+        success: function(result){
+            $('#leavediv').html('')
+                $('#checkdiv').html(
+                    '<table class="table table-stripped">\
+                    <thead>\
+                      <tr>\
+                        <th scope="col">#</th>\
+                        <th scope="col">Type</th>\
+                        <th scope="col">Request</th>\
+                      </tr>\
+                    </thead>\
+                    <tbody id="body"></tbody>\
+                        </table>'
+                    )
+                        
+                $.each(result, function (key, value) {
+                $('#body').append(
+                    '<tr>\
+                        <th scope="row">'+(key+1)+'</th>\
+                        <td>'+value.type+'</td>\
+                        <td>'+value.request+'</td>\
+                      </tr>'
+                )
+
+                })
+            
+        },
+      error: function(){
+      }  
+});
+})
+
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+
+$('#btn').click(function(){
+        let date = new Date()
+        $.ajax({
+        url: "/api/ems/attendance/{{ e.id }}/", 
+        method:"PUT",
+        headers: {'X-CSRFToken': csrftoken},
+        data:{'checkin':date.getHours()+':'+date.getMinutes()+':'+date.getSeconds(),csrfmiddlewaretoken:'{{ csrf_token }}'},
+        success: function(result){
+            $("#in").html('Check in at '+result.checkin)
+    },
+      error: function(){
+      }  
+});
+    })
+
+    $('#btn2').click(function(){
+        let date = new Date()
+        $.ajax({
+        url: "/api/ems/attendance/{{ e.id }}/", 
+        method:"PUT",
+        headers: {'X-CSRFToken': csrftoken},
+        data:{'checkout':date.getHours()+':'+date.getMinutes()+':'+date.getSeconds(),csrfmiddlewaretoken:'{{ csrf_token }}'},
+        success: function(result){
+            $("#out").html('Check out at '+result.checkout)
+    },
+      error: function(){
+      }  
+});
+    })
+    // function attendance(){
+       
+    // }
+</script>
